@@ -83,7 +83,7 @@ export const dummyChats = [
     {
         "_id": "689de4bbaa932dc3a8ef6cd7",
         "userId": "689c6deed410acddc0d95a0e",
-        "userName": "GreatStack",
+        "userName": "Vivek Kumar",
         "name": "New Chat",
         "messages": [
             {

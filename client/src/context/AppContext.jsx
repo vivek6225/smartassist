@@ -14,20 +14,25 @@ export const AppContextProvider = ({ children }) => {
     localStorage.getItem("theme") || "light"
   );
 
-  // fake login
-  useEffect(() => {
+  // 1. Fixed: Set USER data to User state, not chats state
+  const loadUserData = async () => {
     setUser(dummyUserData);
+  }
+
+  
+  const loadUserChats = async () => {
+    setChats(dummyChats);
+      setSelectedChat(dummyChats); 
+    
+  }
+
+  
+  useEffect(() => {
+    loadUserData();
+    loadUserChats();
   }, []);
 
-  // load chats
-  useEffect(() => {
-    if (user) {
-      setChats(dummyChats);
-      setSelectedChat(dummyChats[0]);
-    }
-  }, [user]);
-
-  // theme handler
+  
   useEffect(() => {
     localStorage.setItem("theme", theme);
     if (theme === "dark") {
@@ -41,6 +46,7 @@ export const AppContextProvider = ({ children }) => {
     <AppContext.Provider
       value={{
         user,
+        setUser, 
         chats,
         setChats,
         selectedChat,
