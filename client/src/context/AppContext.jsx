@@ -14,7 +14,7 @@ export const AppContextProvider = ({ children }) => {
     localStorage.getItem("theme") || "light"
   );
 
-  // 1. Fixed: Set USER data to User state, not chats state
+ 
   const loadUserData = async () => {
     setUser(dummyUserData);
   }
@@ -22,7 +22,7 @@ export const AppContextProvider = ({ children }) => {
   
   const loadUserChats = async () => {
     setChats(dummyChats);
-      setSelectedChat(dummyChats); 
+      setSelectedChat(dummyChats[0]); 
     
   }
 
