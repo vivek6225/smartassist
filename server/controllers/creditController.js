@@ -1,4 +1,5 @@
 import Transaction from "../models/Transaction.js"
+import Stripe from "stripe";
 
 const plans = [
   {
@@ -35,28 +36,71 @@ export const getPlans = async (req, res) => {
    }
 }
 
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+
 // API Controller for purchasing a plan 
 
-export const purchasePlan = async (req,res) => {
+export const purchasePlan = async (req, res) => {
   try {
-    const {planId} = req.body
-    const userId = req.user._id
-    const plan = plans.find(plan => plan._id === planId)
+    const { planId } = req.body;
+    const userId = req.user._id;
+    const plan = plans.find(plan => plan._id === planId);
 
-    if(!plan){
-      return res.json({success: false, message:"Inavalid plan"})
+    if (!plan) {
+      return res.json({ success: false, message: "Invalid plan" });
     }
 
-    // Create new Transction 
+    // Prevent duplicate transaction
+    const existingTransaction = await Transaction.findOne({
+      userId,
+      planId,
+      isPaid: false
+    });
+
+    if (existingTransaction) {
+      return res.json({
+        success: false,
+        message: "Transaction already created"
+      });
+    }
+
+    //  Create new transaction
     const transaction = await Transaction.create({
-      userId: userId,
+      userId,
       planId: plan._id,
       amount: plan.price,
       credits: plan.credits,
       isPaid: false
-    })
+    });
+
+    const { origin } = req.headers;
+
+    const session = await stripe.checkout.sessions.create({
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            unit_amount: plan.price * 100,
+            product_data: {
+              name: plan.name
+            }
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      success_url: `${origin}/loading`,
+      cancel_url: `${origin}`,
+      metadata: {
+        transaction: transaction._id.toString(),
+        appId: "SmartAssist"
+      },
+      expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
+    });
+
+    res.json({ success: true, url: session.url });
+
   } catch (error) {
-    
+    res.json({ success: false, message: error.message });
   }
-  
-}
+};
