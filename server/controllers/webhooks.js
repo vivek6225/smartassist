@@ -4,7 +4,7 @@ import User from "../models/User.js";
 
 export const stripewenhooks = async (request, response) => {
     const stripe = new Stripe(process.env.STRIPE_WEBHOOK_SECRET)
-    const sig = request.headers["strip-signature"]
+    const sig = request.headers["stripe-signature"]
 
     let event;
 
