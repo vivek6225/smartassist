@@ -1,6 +1,6 @@
 import Stripe from "stripe";
 import Transaction from "../models/Transaction.js";
-import User from "../models/userTemp.js";
+import User from "../models/User.js";
 
 export const stripewenhooks = async (request, response) => {
   const stripe = new Stripe(process.env.STRIPE_WEBHOOK_SECRET);

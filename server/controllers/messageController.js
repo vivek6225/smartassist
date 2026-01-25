@@ -1,5 +1,5 @@
 import Chat from "../models/Chat.js";
-import User from "../models/userTemp.js";
+import User from "../models/User.js";
 import genAI from "../configs/genai.js";
 import axios from "axios";
 import imagekit from "../configs/imagekit.js";
