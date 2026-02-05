@@ -21,15 +21,17 @@ export const stripeWebhooks = async (request, response) => {
   }
 
   try {
-    // 2. Stripe Dashboard ke hisaab se event type check karein
+    // 2. Stripe events ko handle karein
     switch (event.type) {
+      case "payment_intent.succeeded": 
       case "checkout.session.completed": {
         const session = event.data.object;
+        
+        // Metadata se details nikaalein
         const { transactionId, appId } = session.metadata;
 
-        // 3. Security check: Sirf apne app ki transactions update karein
-        if (appId === "SmartAssist") {
-          // findById use karein direct ID ke liye
+        // 3. Check karein ki metadata sahi hai ya nahi
+        if (appId === "SmartAssist" && transactionId) {
           const transactionData = await transactionModel.findById(transactionId);
 
           if (transactionData && !transactionData.isPaid) {
@@ -42,8 +44,10 @@ export const stripeWebhooks = async (request, response) => {
             transactionData.isPaid = true;
             await transactionData.save();
 
-            console.log(`Success: Transaction ${transactionId} is now Paid!`);
+            console.log(`Success: Transaction ${transactionId} updated to Paid!`);
           }
+        } else {
+            console.log("Metadata missing or appId mismatch");
         }
         break;
       }
@@ -53,7 +57,7 @@ export const stripeWebhooks = async (request, response) => {
         break;
     }
 
-    // Stripe ko 200 OK response bhejein
+    // Stripe ko confirm karein ki signal mil gaya hai
     response.json({ received: true });
   } catch (error) {
     console.log("Webhook Processing Error:", error);
