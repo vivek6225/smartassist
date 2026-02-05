@@ -13,7 +13,7 @@ const app = express()
 await connectDB()
 
 //Striope Webhooks
-app.post('/api/webhook', express.raw({type: 'application/json'}),
+app.post('/api/webhooks', express.raw({type: 'application/json'}),
 stripeWebhooks)
 
 
