@@ -92,7 +92,7 @@ export const purchasePlan = async (req, res) => {
       success_url: `${origin}/loading`,
       cancel_url: `${origin}`,
       metadata: {
-        transaction: transaction._id.toString(),
+        transactionId: transaction._id.toString(),
         appId: "SmartAssist"
       },
       expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
