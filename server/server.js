@@ -1,4 +1,4 @@
-import express from  'express'
+import express from 'express'
 import 'dotenv/config'
 import cors from 'cors'
 import connectDB from './configs/db.js'
@@ -12,25 +12,28 @@ const app = express()
 
 await connectDB()
 
-//Striope Webhooks
-app.post('/api/webhooks', express.raw({type: 'application/json'}),
-stripeWebhooks)
+// Stripe Webhooks (raw body)
+app.post('/api/webhooks', express.raw({ type: 'application/json' }), stripeWebhooks)
 
-
-//middleware
+// middleware
 app.use(cors())
 app.use(express.json())
 
-//Routes
-app.get('/' , (req,res) => res.send('server is live!'))
-app.use('/api/user',userRouter);
-app.use('/api/chat', chatRouter);
-app.use('/api/message', messageRouter);
-app.use('/api/credit', creditRouter)
+// Routes
+app.get('/', (req, res) => res.send('server is live!'))
 
+
+app.get('/loading', (req, res) => {
+  res.send("Payment successful! You can close this page.");
+})
+
+app.use('/api/user', userRouter)
+app.use('/api/chat', chatRouter)
+app.use('/api/message', messageRouter)
+app.use('/api/credit', creditRouter)
 
 const PORT = process.env.PORT || 3000
 
-app.listen(PORT, () =>{
+app.listen(PORT, () => {
   console.log(`server is running on port ${PORT}`)
 })
