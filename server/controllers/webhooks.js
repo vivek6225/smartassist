@@ -56,7 +56,7 @@ export const stripeWebhooks = async (request, response) => {
       console.log("Unhandled event type:", eventType);
     }
 
-    // Stripe ko confirm karein ki signal mil gaya hai
+
     response.json({ received: true });
   } catch (error) {
     console.log("Webhook Processing Error:", error);
