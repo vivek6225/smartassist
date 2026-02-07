@@ -1,6 +1,6 @@
 import Stripe from "stripe";
-import transactionModel from "../models/Transaction.js";  
-import userModel from "../models/User.js"; 
+import Transaction from "../models/Transaction.js";  
+import User from "../models/User.js"; 
 
 export const stripeWebhooks = async (request, response) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -32,11 +32,11 @@ export const stripeWebhooks = async (request, response) => {
 
         // 3. Check karein ki metadata sahi hai ya nahi
         if (appId === "SmartAssist" && transactionId) {
-          const transactionData = await transactionModel.findById(transactionId);
+          const transactionData = await Transaction.findById(transactionId);
 
           if (transactionData && !transactionData.isPaid) {
             // 4. User ke credits badhayein
-            await userModel.findByIdAndUpdate(transactionData.userId, {
+            await User.findByIdAndUpdate(transactionData.userId, {
               $inc: { credits: transactionData.credits },
             });
 
