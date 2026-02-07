@@ -21,17 +21,19 @@ export const stripeWebhooks = async (request, response) => {
   }
 
   try {
-  
-    if (event.type === "checkout.session.completed") {
-      const session = event.data.object;
+    const session = event.data.object;
+    const eventType = event.type;
+
+    // Dono events handle karein kyunki Stripe kabhi ek bhejta hai kabhi dusra
+    if (eventType === "checkout.session.completed" || eventType === "payment_intent.succeeded") {
       
-     
+      // Metadata dono events mein isi path par hota hai
       const { transactionId, appId } = session.metadata || {};
 
       if (appId === "SmartAssist" && transactionId) {
         const transactionData = await Transaction.findById(transactionId);
 
-      
+        // Sirf tab update karein agar transaction mil jaye aur unpaid ho
         if (transactionData && !transactionData.isPaid) {
           
           // 1. User ke credits badhayein
@@ -43,16 +45,18 @@ export const stripeWebhooks = async (request, response) => {
           transactionData.isPaid = true;
           await transactionData.save();
 
-          console.log(`Success: Transaction ${transactionId} updated to Paid!`);
+          console.log(`Final Success: Transaction ${transactionId} updated to Paid!`);
+        } else {
+            console.log("Transaction already paid or not found in DB");
         }
       } else {
-        console.log("Metadata missing or appId mismatch");
+        console.log("Metadata (transactionId/appId) missing in event object");
       }
     } else {
-      console.log("Unhandled event type:", event.type);
+      console.log("Unhandled event type:", eventType);
     }
 
-    // Stripe ko 200 OK bhejein
+    // Stripe ko confirm karein ki signal mil gaya hai
     response.json({ received: true });
   } catch (error) {
     console.log("Webhook Processing Error:", error);
