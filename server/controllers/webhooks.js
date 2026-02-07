@@ -9,7 +9,7 @@ export const stripeWebhooks = async (request, response) => {
   let event;
 
   try {
-    // 1. Webhook signature verify karein
+    // Webhook signature verify karein
     event = stripe.webhooks.constructEvent(
       request.body,
       sig,
@@ -21,43 +21,38 @@ export const stripeWebhooks = async (request, response) => {
   }
 
   try {
-    // 2. Stripe events ko handle karein
-    switch (event.type) {
-      case "payment_intent.succeeded": 
-      case "checkout.session.completed": {
-        const session = event.data.object;
-        
-        // Metadata se details nikaalein
-        const { transactionId, appId } = session.metadata;
+  
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object;
+      
+     
+      const { transactionId, appId } = session.metadata || {};
 
-        // 3. Check karein ki metadata sahi hai ya nahi
-        if (appId === "SmartAssist" && transactionId) {
-          const transactionData = await Transaction.findById(transactionId);
+      if (appId === "SmartAssist" && transactionId) {
+        const transactionData = await Transaction.findById(transactionId);
 
-          if (transactionData && !transactionData.isPaid) {
-            // 4. User ke credits badhayein
-            await User.findByIdAndUpdate(transactionData.userId, {
-              $inc: { credits: transactionData.credits },
-            });
+      
+        if (transactionData && !transactionData.isPaid) {
+          
+          // 1. User ke credits badhayein
+          await User.findByIdAndUpdate(transactionData.userId, {
+            $inc: { credits: transactionData.credits },
+          });
 
-            // 5. Transaction ko Paid mark karein
-            transactionData.isPaid = true;
-            await transactionData.save();
+          // 2. Transaction ko Paid mark karein
+          transactionData.isPaid = true;
+          await transactionData.save();
 
-            console.log(`Success: Transaction ${transactionId} updated to Paid!`);
-          }
-        } else {
-            console.log("Metadata missing or appId mismatch");
+          console.log(`Success: Transaction ${transactionId} updated to Paid!`);
         }
-        break;
+      } else {
+        console.log("Metadata missing or appId mismatch");
       }
-
-      default:
-        console.log("Unhandled event type:", event.type);
-        break;
+    } else {
+      console.log("Unhandled event type:", event.type);
     }
 
-    // Stripe ko confirm karein ki signal mil gaya hai
+    // Stripe ko 200 OK bhejein
     response.json({ received: true });
   } catch (error) {
     console.log("Webhook Processing Error:", error);

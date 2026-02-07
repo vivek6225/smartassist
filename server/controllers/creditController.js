@@ -84,7 +84,7 @@ export const purchasePlan = async (req, res) => {
                 },
             ],
             mode: "payment",
-            // Ab ye user ko wapas aapke React App ke loading page par bhejega
+          
             success_url: `${frontend_url}/loading`, 
             cancel_url: `${frontend_url}`,
             metadata: {
