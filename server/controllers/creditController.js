@@ -1,3 +1,5 @@
+// server/controllers/creditController.js
+
 import Transaction from "../models/Transaction.js"
 import Stripe from "stripe";
 
@@ -66,8 +68,6 @@ export const purchasePlan = async (req, res) => {
             isPaid: false
         });
 
-       
-     
         const frontend_url = "http://localhost:5173"; 
 
         const session = await stripe.checkout.sessions.create({
@@ -84,13 +84,24 @@ export const purchasePlan = async (req, res) => {
                 },
             ],
             mode: "payment",
-          
             success_url: `${frontend_url}/loading`, 
             cancel_url: `${frontend_url}`,
+            
+            // 1. Session level metadata
             metadata: {
                 transactionId: transaction._id.toString(),
                 appId: "SmartAssist"
             },
+
+            // 2. IMPORTANT: Payment Intent ke liye metadata yahan add karein
+            // Isse Vercel logs mein "Metadata missing" wala error chala jayega
+            payment_intent_data: {
+                metadata: {
+                    transactionId: transaction._id.toString(),
+                    appId: "SmartAssist"
+                }
+            },
+
             expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
         });
 
